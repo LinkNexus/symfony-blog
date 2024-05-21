@@ -22,6 +22,10 @@ Encore
      */
     .addEntry('app', './assets/app.js')
 
+    .addStyleEntry('external', './assets/styles/external.css')
+
+    .addStyleEntry('responsive', './assets/styles/responsive.css')
+
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()
 
