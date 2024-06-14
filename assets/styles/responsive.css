@@ -1,6 +1,57 @@
 @import url("./app.css");
 
-/* for-tablet-portrait-up */
+@media only screen and (max-width: 1100px) {
+    .main-header {
+        .search-bar-part {
+            margin-right: 25px;
+            .fake-search-bar {
+                width: 40px !important;
+                padding-left: 0;
+                justify-content: center;
+                border-radius: 50% !important;
+
+                & svg {
+                    margin-right: 0 !important;
+                }
+
+                & span {
+                    display: none;
+                }
+            }
+        }
+        & .nav-icons-part {
+            width: 50%;
+
+            & .games-icon {
+                display: none !important;
+            }
+
+            & .menu-icon {
+                display: flex !important;
+            }
+        }
+
+        & .header-actions {
+            & .create-action {
+                display: flex !important;
+            }
+
+            & .menu-action {
+                display: none !important;
+            }
+        }
+    }
+
+    .left-aside-menu {
+        display: none;
+    }
+
+    .main-section {
+        left: 7% !important;
+        width: calc(100% - 7% - 275px) !important;
+    }
+}
+
 @media only screen and (max-width: 925px) {
 
     & .website-name {
@@ -30,12 +81,63 @@
     .magic-link-form-container {
         width: 350px !important;
     }
+
+    .right-aside-menu {
+        display: none !important;
+    }
+
+    .main-section-container {
+        justify-content: center !important;
+
+        .main-section {
+            left: 0 !important;
+            width: 80% !important;
+        }
+    }
 }
 
 @media only screen and (max-width: 350px) {
     .login-section .login-text-container {
         & p {
             display: none;
+        }
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .main-section-container {
+        .main-section {
+            width: 100% !important;
+        }
+    }
+}
+
+@media only screen and (max-width: 720px) {
+    .main-header {
+        & .search-bar-part {
+            .fake-search-bar {
+                margin-left: -30px !important;
+            }
+        }
+        & .nav-icons-part {
+            & .icon-block:not(.menu-icon) {
+                display: none !important;
+            }
+        }
+    }
+
+    & .upload-post-actions {
+        justify-content: center !important;
+        & .upload-post-action {
+            font-size: 14px !important;
+
+            & img {
+                height: 25px !important;
+                width: 25px !important;
+            }
+            &:nth-child(2) {
+                display: none !important;
+            }
         }
     }
 }
@@ -72,13 +174,21 @@
     }
 
     .login-form-container, .login-text-container, .magic-link-form-container,
-    .register-form-container, .reset-password-form-container, .reset-password-text-container {
+    .register-form-container, .reset-password-form-container, .reset-password-text-container, .create-post-form-container {
         width: 95% !important;
     }
 
     .register-form-container, .reset-password-form-container {
         & .toggle-password-button {
             left: 82% !important;
+        }
+    }
+
+    .main-section .post-block {
+        & .post-action {
+            & span {
+                display: none;
+            }
         }
     }
 }

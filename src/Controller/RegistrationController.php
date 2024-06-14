@@ -62,6 +62,7 @@ class RegistrationController extends AbstractController
             );
 
             // do anything else you need here, like send an email
+            $this->addFlash('success', 'Your Account has been successfully created, check your Mailbox for instructions to activate your account!');
 
             return $security->login($user, 'form_login', 'main') ?: $this->redirectToRoute('app_home');
         }

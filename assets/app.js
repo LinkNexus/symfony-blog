@@ -11,6 +11,8 @@ import { Alert } from 'bootstrap';
 import './styles/app.css';
 import './styles/external.css';
 import './styles/responsive.css';
+import './styles/main.css';
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // Change the welcome text on the login page depending on the screen size

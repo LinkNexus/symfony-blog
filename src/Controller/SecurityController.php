@@ -28,7 +28,7 @@ class SecurityController extends AbstractController
     {
         $user = $this->security->getUser();
 
-        if ($user instanceof User) {
+        if ($user instanceof User  && $user->isVerified()) {
             return $this->redirectToRoute('app_home');
         }
         // get the login error if there is one
@@ -74,7 +74,7 @@ class SecurityController extends AbstractController
     {
         $user = $this->security->getUser();
 
-        if ($user instanceof User) {
+        if ($user instanceof User && $user->isVerified()) {
             return $this->redirectToRoute('app_home');
         }
 

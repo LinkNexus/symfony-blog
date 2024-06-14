@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -13,6 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USERNAME', fields: ['username'])]
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
 #[UniqueEntity('email', message: 'There is already an account with this email')]
+#[UniqueEntity('slug')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -27,7 +30,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         minMessage: 'The username must have at least {{ limit }} characters',
     )]
     #[Assert\Regex(pattern: '/^[a-zA-Z]/', message: 'The username must start with a letter')]
-    #[Assert\Regex(pattern: '/[0-9a-zA-Z_\s]*/', message: 'The username must only contain letters, numbers, underscores and white spaces')]
+    #[Assert\Regex(pattern: '/[0-9a-zA-Z_]*/', message: 'The username must only contain letters, numbers and underscores')]
     #[Assert\Regex(pattern: '/[0-9a-zA-Z]$/', message: 'The username must end with a letter or number')]
     private ?string $username = null;
 
@@ -73,10 +76,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
+    /**
+     * @var Collection<int, Post>
+     */
+    #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $posts;
+
+    /**
+     * @var Collection<int, PostRestriction>
+     */
+    #[ORM\ManyToMany(targetEntity: PostRestriction::class, mappedBy: 'user')]
+    private Collection $postRestrictions;
+
+    /**
+     * @var Collection<int, PostReaction>
+     */
+    #[ORM\OneToMany(targetEntity: PostReaction::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $postReactions;
+
     public function __construct()
     {
         $this->joinedAt = new \DateTimeImmutable();
         $this->lastLoggedInAt = new \DateTimeImmutable();
+        $this->posts = new ArrayCollection();
+        $this->postRestrictions = new ArrayCollection();
+        $this->postReactions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -114,8 +138,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+
+        if ($this->isVerified) {
+            $roles[] = 'ROLE_USER';
+        } else {
+            $roles[] = 'ROLE_UNVERIFIED';
+        }
+
+        if ($this->email === 'admin@nexus.tech') {
+            $roles[] = 'ROLE_ADMIN';
+        }
 
         return array_unique($roles);
     }
@@ -246,6 +278,98 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Post>
+     */
+    public function getPosts(): Collection
+    {
+        return $this->posts;
+    }
+
+    public function addPost(Post $post): static
+    {
+        if (!$this->posts->contains($post)) {
+            $this->posts->add($post);
+            $post->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePost(Post $post): static
+    {
+        if ($this->posts->removeElement($post)) {
+            // set the owning side to null (unless already changed)
+            if ($post->getUser() === $this) {
+                $post->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PostRestriction>
+     */
+    public function getPostRestrictions(): Collection
+    {
+        return $this->postRestrictions;
+    }
+
+    public function addPostRestriction(PostRestriction $postRestriction): static
+    {
+        if (!$this->postRestrictions->contains($postRestriction)) {
+            $this->postRestrictions->add($postRestriction);
+            $postRestriction->addUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePostRestriction(PostRestriction $postRestriction): static
+    {
+        if ($this->postRestrictions->removeElement($postRestriction)) {
+            $postRestriction->removeUser($this);
+        }
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->username;
+    }
+
+    /**
+     * @return Collection<int, PostReaction>
+     */
+    public function getPostReactions(): Collection
+    {
+        return $this->postReactions;
+    }
+
+    public function addPostReaction(PostReaction $postReaction): static
+    {
+        if (!$this->postReactions->contains($postReaction)) {
+            $this->postReactions->add($postReaction);
+            $postReaction->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePostReaction(PostReaction $postReaction): static
+    {
+        if ($this->postReactions->removeElement($postReaction)) {
+            // set the owning side to null (unless already changed)
+            if ($postReaction->getUser() === $this) {
+                $postReaction->setUser(null);
+            }
+        }
 
         return $this;
     }

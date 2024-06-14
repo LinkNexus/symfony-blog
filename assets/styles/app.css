@@ -14,6 +14,21 @@
     --secondary-color: #1877f2;
     --principal-background: #f0f2f5;
     --second-background: #fff;
+    --third-background: #d8dadf;
+    --fourth-background: #f7f8fa;
+    --fifth-background: #e4e6e8;
+    --secondary-text-color: #65676B;
+}
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #bcc0c4;
+
+    &:hover {
+        background: #FFF;
+    }
 }
 
 * {
@@ -34,7 +49,7 @@ body {
     flex-direction: column;
     margin: 0;
     max-width: 100%;
-    overflow: auto;
+    overflow-x: hidden;
 }
 
 img, video, svg {
@@ -89,7 +104,7 @@ img, video, svg {
     }
 }
 
-.magic-link-form-container, .login-form-container, .register-form-container, .reset-password-form-container {
+.magic-link-form-container, .login-form-container, .register-form-container, .reset-password-form-container, .create-post-form-container {
     width: 100%;
     display: flex;
     background: var(--second-background);

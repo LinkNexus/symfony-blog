@@ -1,0 +1,102 @@
+{% for post in user.posts %}
+    <div class="post-block" id="post_{{ post.id }}">
+        <div class="post-header">
+            <div class="profile">
+                {% set avatarPath = 'images/' ~ user.gender ~ '_icon.jpg' %}
+                <img src="{{ avatarPath }}" alt="">
+                <div>
+                    <a class="user-username">{{ post.user.username }}</a>
+                    <span>{{ post.createdAt|ago }}</span>
+                </div>
+            </div>
+
+            {#  <div class="post-menu">
+
+            </div> #}
+
+            <div class="post-menu-button">
+                <twig:ux:icon name="solar:menu-dots-bold" />
+            </div>
+        </div>
+
+        <div class="categories">
+            {% for category in post.categories %}
+                <a href="#" class="category">
+                    {{ category.icon|raw }}
+                    <span>{{ category.name }}</span>
+                </a>
+            {% endfor %}
+        </div>
+
+        <div class="fr-view">
+            {{ post.content|raw }}
+        </div>
+
+        <div class="post-reacts-infos">
+            <div class="post-reacts-number">
+                {% for react in post.postReactions %}
+                    {% if react.user == user %}
+                        {% if react.type == 'like' %}
+                            <style>
+                                #post_{{ post.id }} .like {
+                                    color: var(--principal-color);
+                                }
+                            </style>
+
+                        {% else %}
+                            <style>
+                                #post_{{ post.id }} .dislike {
+                                    color: red;
+                                }
+                            </style>
+
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                <div class="post-likes">
+                    <twig:ux:icon name="mdi:like" class="post-like-icon" />
+                    <span>220</span>
+                </div>
+                <div class="post-dislikes">
+                    <twig:ux:icon name="mdi:dislike" class="post-dislike-icon" />
+                    <span>20</span>
+                </div>
+            </div>
+
+            <div class="post-comments-number">
+                <span>100</span>
+                <twig:ux:icon name="iconamoon:comment-fill" />
+            </div>
+        </div>
+
+        <div class="post-actions">
+            <div class="like post-action">
+                <twig:ux:icon name="uiw:like-o" />
+                <span>Like</span>
+            </div>
+            <div class="dislike post-action">
+                <twig:ux:icon name="uiw:dislike-o" />
+                <span>Dislike</span>
+            </div>
+            <div href="#" class="post-action">
+                <twig:ux:icon name="iconamoon:comment-light" />
+                <span>Comment</span>
+            </div>
+            <div href="#" class="post-action">
+                <twig:ux:icon name="uil:share" />
+                <span>Share</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('#post_{{ post.id }} .like').addEventListener('click', function (evt) {
+            location.href = '/post/react/{{ post.id }}/like';
+        })
+
+        document.querySelector('#post_{{ post.id }} .dislike').addEventListener('click', function (evt) {
+            location.href = '/post/react/{{ post.id }}/dislike';
+        })
+    </script>
+{% endfor %}
