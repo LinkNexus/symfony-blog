@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ parent() }} | Display Post{% endblock %}
+{% block title %}{{ parent() }} | Modify Post{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -12,6 +12,8 @@
     {{ encore_entry_script_tags('main') }}
 {% endblock %}
 
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
 {% block body %}
     <style>
         .icon-block {
@@ -22,15 +24,22 @@
             }
         }
 
-        .post-block {
-            align-self: center;
-            justify-self: center;
-        }
+        /* #post_form_restrictionType {
+            display: none;
+        } */
     </style>
     {% include 'base/_main_header.html.twig' %}
 
-    {% include 'base/_flash_messages.html.twig' %}
+    <div class="create-post-form-container">
+        <h2>Update Post</h2>
 
-    {% include 'base/_display_posts.html.twig' %}
+        {% include 'base/_flash_messages.html.twig' %}
+
+        {{ component('PostForm', { form: form }) }}
+    </div>
+
+    <script>
+
+        // setHiddenTextareaObserver();
+    </script>
 {% endblock %}
-

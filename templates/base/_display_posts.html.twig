@@ -2,17 +2,66 @@
     <div class="post-block" id="post_{{ post.id }}">
         <div class="post-header">
             <div class="profile">
-                {% set avatarPath = 'images/' ~ user.gender ~ '_icon.jpg' %}
-                <img src="{{ avatarPath }}" alt="">
+                {% set postAvatarPath = 'images/' ~ post.user.gender ~ '_icon.jpg' %}
+                <img src="{{ asset(postAvatarPath) }}" alt="">
                 <div>
-                    <a class="user-username">{{ post.user.username }}</a>
+                    <a href="#" class="user-username">{{ post.user.username }}</a>
                     <span>{{ post.createdAt|ago }}</span>
                 </div>
             </div>
 
-            {#  <div class="post-menu">
+            <div class="post-menu">
+                <div class="post-menu-action">
+                    <twig:ux:icon name="material-symbols:bookmark" />
+                    <div>
+                        <span class="principal-text">Save Post</span>
+                        <span>Add this to your saved items</span>
+                    </div>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="ph:code-bold" />
+                    <span class="principal-text">Embed</span>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="zondicons:shield" />
+                    <span class="principal-text">Report post to Admins</span>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="charm:circle-cross" />
+                    <span class="principal-text">Hide Post</span>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="mingcute:time-fill" />
+                    <div>
+                        <span class="principal-text">Snooze {{ post.user.username }} for 30 days</span>
+                        <span>Temporarily stop seeing {{ post.user.username }} posts.</span>
+                    </div>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="solar:user-block-bold" />
+                    <div>
+                        <span class="principal-text">Block {{ post.user.username }} profile</span>
+                        <span>You won't be able to see or contact each other</span>
+                    </div>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="mdi:eye" />
+                    <span class="principal-text">See edit history</span>
+                </div>
+                {% if post.user == user %}
+                    <div class="edit-post post-menu-action">
+                        <twig:ux:icon name="ic:sharp-edit" />
+                        <span class="principal-text">Edit Post</span>
+                    </div>
+                {% endif %}
+            </div>
 
-            </div> #}
+            <script>
+                const editPostButton = document.querySelector('.edit-post');
+                editPostButton.addEventListener('click', () => {
+                    window.location.href = '/post/update/{{ post.id }}';
+                });
+            </script>
 
             <div class="post-menu-button">
                 <twig:ux:icon name="solar:menu-dots-bold" />
@@ -31,6 +80,8 @@
         <div class="fr-view">
             {{ post.content|raw }}
         </div>
+
+        {% dump(post) %}
 
         <div class="post-reacts-infos">
             <div class="post-reacts-number">
@@ -56,11 +107,29 @@
 
                 <div class="post-likes">
                     <twig:ux:icon name="mdi:like" class="post-like-icon" />
-                    <span>220</span>
+                    <span  class="likes-number">
+                        {% set likes = 0 %}
+                        {% for react in post.postReactions %}
+                            {% if react.type == 'like' %}
+                                {% set likes = likes + 1 %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {{ likes }}
+                    </span>
                 </div>
                 <div class="post-dislikes">
                     <twig:ux:icon name="mdi:dislike" class="post-dislike-icon" />
-                    <span>20</span>
+                    <span class="dislikes-number">
+                        {% set dislikes = 0 %}
+                        {% for react in post.postReactions %}
+                            {% if react.type == 'dislike' %}
+                                {% set dislikes = dislikes + 1 %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {{ dislikes }}
+                    </span>
                 </div>
             </div>
 
@@ -71,32 +140,141 @@
         </div>
 
         <div class="post-actions">
-            <div class="like post-action">
+            <a href="#" class="like post-action">
                 <twig:ux:icon name="uiw:like-o" />
                 <span>Like</span>
-            </div>
-            <div class="dislike post-action">
+            </a>
+            <a href="#" class="dislike post-action">
                 <twig:ux:icon name="uiw:dislike-o" />
-                <span>Dislike</span>
-            </div>
-            <div href="#" class="post-action">
+                <span class="dislikes-number">Dislike</span>
+            </a>
+            <a href="{{ path('app_post_show', { 'id': post.id }) }}#comments" class="post-action">
                 <twig:ux:icon name="iconamoon:comment-light" />
                 <span>Comment</span>
-            </div>
-            <div href="#" class="post-action">
+            </a>
+            <a href="#" class="share post-action">
                 <twig:ux:icon name="uil:share" />
                 <span>Share</span>
-            </div>
+            </a>
         </div>
     </div>
 
     <script>
-        document.querySelector('#post_{{ post.id }} .like').addEventListener('click', function (evt) {
-            location.href = '/post/react/{{ post.id }}/like';
+        const likeButton{{ post.id }} = document.querySelector('#post_{{ post.id }} .like'),
+            dislikeButton{{ post.id }} = document.querySelector('#post_{{ post.id }} .dislike'),
+            likes{{ post.id }} = document.querySelector('#post_{{ post.id }} .likes-number'),
+            dislikes{{ post.id }} = document.querySelector('#post_{{ post.id }} .dislikes-number'),
+            shareButton{{ post.id }} = document.querySelector('#post_{{ post.id }} .share');
+
+        let likesNumber{{ post.id }} = Number(likes{{ post.id }}.innerText),
+            dislikesNumber{{ post.id }} = Number(dislikes{{ post.id }}.innerText);
+
+        likeButton{{ post.id }}.addEventListener('click', function (evt) {
+            evt.preventDefault();
+            reactToPost(this, dislikeButton{{ post.id }}, 'var(--principal-color)', 'like');
         })
 
-        document.querySelector('#post_{{ post.id }} .dislike').addEventListener('click', function (evt) {
-            location.href = '/post/react/{{ post.id }}/dislike';
+        dislikeButton{{ post.id }}.addEventListener('click', function (evt) {
+            evt.preventDefault();
+            reactToPost(this, likeButton{{ post.id }}, 'red', 'dislike');
         })
+
+        shareButton{{ post.id }}.addEventListener('click', function (evt) {
+            evt.preventDefault();
+            navigator.clipboard.writeText('{{ url('app_post_show', { 'id': post.id })|escape('js') }}')
+                .then(() => {
+                    alert('Link copied to clipboard!');
+                }).catch(err => {
+                    alert('Failed to copy Link');
+                })
+            ;
+        })
+
+        /**
+         *
+         * @param {Element} element
+         * @param {Element} otherElement
+         * @param {string} color
+         * @param {string} reaction
+         * @returns {boolean}
+         */
+        function reactToPost(element, otherElement, color, reaction = 'like')
+        {
+            const url = '/post/react/{{ post.id }}';
+            data = {
+                reaction: reaction
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest' // Important for Symfony to detect AJAX request
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+
+                    if (element === likeButton{{ post.id }}) {
+                        if (getComputedStyle(otherElement).color === 'rgb(255, 0, 0)') {
+                            dislikesNumber{{ post.id }} -= 1;
+                            dislikes{{ post.id }}.innerText = dislikesNumber{{ post.id }};
+
+                            likesNumber{{ post.id }} += 1;
+                            likes{{ post.id }}.innerText = likesNumber{{ post.id }};
+
+                            element.style.color = color;
+                            otherElement.style.color = 'inherit';
+                        }
+
+                        else if (getComputedStyle(element).color === 'rgb(35, 182, 217)') {
+                            likesNumber{{ post.id }} -= 1;
+                            likes{{ post.id }}.innerText = likesNumber{{ post.id }};
+                            element.style.color = 'inherit';
+                        }
+
+                        else {
+                            likesNumber{{ post.id }} += 1;
+                            likes{{ post.id }}.innerText = likesNumber{{ post.id }};
+
+                            element.style.color = color;
+                            otherElement.style.color = 'inherit';
+                        }
+                    } else {
+                        if (getComputedStyle(otherElement).color === 'rgb(35, 182, 217)') {
+                            likesNumber{{ post.id }} -= 1;
+                            likes{{ post.id }}.innerText = likesNumber{{ post.id }};
+
+                            dislikesNumber{{ post.id }} += 1;
+                            dislikes{{ post.id }}.innerText = dislikesNumber{{ post.id }};
+
+                            element.style.color = color;
+                            otherElement.style.color = 'inherit';
+                        }
+
+                        else if (getComputedStyle(element).color === 'rgb(255, 0, 0)') {
+                            dislikesNumber{{ post.id }} -= 1;
+                            dislikes{{ post.id }}.innerText = dislikesNumber{{ post.id }};
+                            element.style.color = 'inherit';
+                        }
+
+                        else {
+                            dislikesNumber{{ post.id }} += 1;
+                            dislikes{{ post.id }}.innerText = dislikesNumber{{ post.id }};
+
+                            element.style.color = color;
+                            otherElement.style.color = 'inherit';
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    return false;
+                })
+            ;
+
+            return true;
+        }
     </script>
 {% endfor %}

@@ -184,10 +184,10 @@
         }
     }
 
-    .main-section .post-block {
+    .post-block {
         & .post-action {
             & span {
-                display: none;
+                display: none !important;
             }
         }
     }

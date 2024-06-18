@@ -48,11 +48,21 @@ class Post
     #[ORM\OneToMany(targetEntity: PostReaction::class, mappedBy: 'post', orphanRemoval: true)]
     private Collection $postReactions;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    /**
+     * @var Collection<int, PostModification>
+     */
+    #[ORM\OneToMany(targetEntity: PostModification::class, mappedBy: 'post', orphanRemoval: true)]
+    private Collection $postModifications;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->categories = new ArrayCollection();
         $this->postReactions = new ArrayCollection();
+        $this->postModifications = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -183,6 +193,48 @@ class Post
             // set the owning side to null (unless already changed)
             if ($postReaction->getPost() === $this) {
                 $postReaction->setPost(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PostModification>
+     */
+    public function getPostModifications(): Collection
+    {
+        return $this->postModifications;
+    }
+
+    public function addPostModification(PostModification $postModification): static
+    {
+        if (!$this->postModifications->contains($postModification)) {
+            $this->postModifications->add($postModification);
+            $postModification->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removePostModification(PostModification $postModification): static
+    {
+        if ($this->postModifications->removeElement($postModification)) {
+            // set the owning side to null (unless already changed)
+            if ($postModification->getPost() === $this) {
+                $postModification->setPost(null);
             }
         }
 

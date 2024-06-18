@@ -10,7 +10,7 @@
          {% set imagePath = 'images/' ~ app.user.gender ~ '_icon.jpg' %}
          <img src="{{ asset(imagePath|lower) }}" alt="profile_pic">
          <div>
-             <span>{{ app.user.username }}</span>
+             <a href="#">{{ app.user.username }}</a>
              {{ form_widget(form.restrictionType) }}
              {#  <div class="post-restriction form-select">
                  <twig:ux:icon name="heroicons:users-solid" />
@@ -32,6 +32,8 @@
          {{ form_widget(form.content) }}
      </div>
 
-     <button type="submit" class="button btn">Create Post</button>
+     <button type="submit" class="button btn">
+         Submit
+     </button>
 
  {{ form_end(form) }}

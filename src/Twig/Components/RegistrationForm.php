@@ -36,7 +36,6 @@ class RegistrationForm extends AbstractController
     public function save(): void
     {
         $this->submitForm();
-        $this->addFlash('success', 'Your Account has been successfully implemented');
-        $this->redirectToRoute('app_home');
+        // $this->addFlash('success', 'Your Account has been successfully implemented');
     }
 }

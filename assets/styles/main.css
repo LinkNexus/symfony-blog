@@ -677,197 +677,281 @@
 
         & .post-block {
             width: 90%;
-            background: var(--second-background);
-            border-radius: 10px;
-            margin-top: 20px;
+        }
+    }
+}
+
+& .post-block {
+    width: 80%;
+    background: var(--second-background);
+    border-radius: 10px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    & .post-header {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #dadde1;
+        height: 90px;
+
+        & .profile {
             display: flex;
+            padding: 20px;
+            align-items: center;
+            align-self: flex-start;
+            max-height: 110px;
+            overflow: visible;
+
+            & img {
+                height: 40px;
+                border-radius: 50%;
+                aspect-ratio: 1;
+                margin-right: 10px;
+            }
+
+            & div {
+                display: flex;
+                flex-direction: column;
+
+                & .user-username {
+                    all: unset;
+                    font-weight: bolder;
+                    font-size: 1rem;
+                    display: inline-block;
+                    margin-bottom: 1px;
+
+                    &:hover {
+                        cursor: pointer;
+                        text-decoration: underline;
+                    }
+                }
+
+                & span:not(.user-username) {
+                    font-size: 0.875rem;
+                    color: var(--secondary-text-color);
+                }
+            }
+        }
+
+        & .post-menu {
             flex-direction: column;
             align-items: center;
+            align-self: flex-start;
+            padding: 10px;
+            background: var(--second-background);
+            z-index: 3;
+            border: 1px solid #dadde1;
+            border-radius: 10px;
+            display: none;
 
-            & .post-header {
-                width: 100%;
+            & .post-menu-action {
+                all: unset;
                 display: flex;
+                padding: 5px;
+                width: 100%;
+                margin-bottom: 5px;
+                outline: none;
+                transition: 0.2s all;
+                border-radius: 5px;
+                min-height: 50px;
                 align-items: center;
-                justify-content: space-between;
                 border-bottom: 1px solid #dadde1;
 
-                & .profile {
-                    display: flex;
-                    padding: 20px;
-                    align-items: center;
-                    align-self: flex-start;
-                    max-height: 110px;
-                    overflow: visible;
-
-                    & img {
-                        height: 40px;
-                        border-radius: 50%;
-                        aspect-ratio: 1;
-                        margin-right: 10px;
-                    }
-
-                    & div {
-                        display: flex;
-                        flex-direction: column;
-
-                        & .user-username {
-                            all: unset;
-                            font-weight: bolder;
-                            font-size: 1rem;
-                            display: inline-block;
-                            margin-bottom: 1px;
-
-                            &:hover {
-                                cursor: pointer;
-                                text-decoration: underline;
-                            }
-                        }
-
-                        & span:not(.user-username) {
-                            font-size: 0.875rem;
-                            color: var(--secondary-text-color);
-                        }
-                    }
+                &:active {
+                    transform: scale(0.98);
+                    box-shadow: 3px 2px 22px 1px rgba(0, 0, 0, 0.24);
                 }
 
-                & .post-menu-button {
-                    height: 40px;
-                    aspect-ratio: 1;
-                    border-radius: 50%;
-                    align-items: center;
-                    justify-content: center;
-                    display: flex;
-                    margin-right: 20px;
-
-                    &:hover {
-                        background: var(--principal-background);
-                        cursor: pointer;
-                    }
-
-                    & svg {
-                        height: 30px;
-                    }
-                }
-            }
-
-            & .categories {
-                display: flex;
-                padding: 10px;
-                align-items: center;
-                width: 100%;
-                margin-top: 10px;
-                justify-content: center;
-                flex-wrap: wrap;
-
-                & .category {
-                    all: unset;
-                    padding: 5px;
+                &:hover {
+                    cursor: pointer;
                     background: var(--principal-background);
-                    border-radius: 5px;
-                    display: flex;
-                    align-items: center;
-                    margin-right: 10px;
-                    box-sizing: content-box;
-                    min-height: 25px;
-                    margin-bottom: 10px;
-
-                    &:hover {
-                        cursor: pointer;
-                        background: var(--third-background);
-                    }
-
-                    & svg {
-                        height: 25px;
-                        margin-right: 5px;
-                    }
                 }
-            }
-
-            & .fr-view {
-                border-top: 1px solid #dadde1;
-                margin-top: 10px;
-                padding: 10px 20px 10px 20px;
-                max-width: 100%;
-                border-bottom: 1px solid #dadde1;
-            }
-
-            & .post-reacts-infos {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                width: 100%;
-                padding: 10px 20px 10px 20px;
-                border-bottom: 1px solid #dadde1;
-                color: var(--secondary-text-color);
-                font-size: 0.875rem;
 
                 & svg {
-                    height: 20px;
+                    height: 30px;
                     aspect-ratio: 1;
+                    margin-right: 5px;
                 }
 
-                & .post-reacts-number {
-                    display: flex;
-
-                    & .post-likes, & .post-dislikes {
-                        display: flex;
-                        margin-right: 10px;
-
-                        & svg {
-                            margin-right: 3px;
-                        }
-
-                        & .post-like-icon {
-                            & path {
-                                fill: var(--principal-color);
-                            }
-                        }
-
-                        & .post-dislike-icon {
-                            & path {
-                                fill: red;
-                            }
-                        }
-                    }
+                & .principal-text {
+                    font-weight: bolder;
+                    display: inline-block;
+                    margin-bottom: 3px;
                 }
 
-                & .post-comments-number {
+                &>div {
                     display: flex;
+                    flex-direction: column;
 
-                    & svg {
-                        margin-right: 0;
-                        margin-left: 3px;
+                    & span:not(.principal-text) {
+                        font-size: 0.75rem;
+                        color: var(--secondary-text-color);
                     }
                 }
             }
+        }
 
-            & .post-actions {
+        & .post-menu-button {
+            height: 40px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            margin-right: 20px;
+            outline: none;
+            transition: 0.2s all;
+
+            &:active {
+                transform: scale(0.98);
+                box-shadow: 3px 2px 22px 1px rgba(0, 0, 0, 0.24);
+            }
+
+            &:hover {
+                background: var(--principal-background);
+                cursor: pointer;
+            }
+
+            & svg {
+                height: 30px;
+            }
+        }
+    }
+
+    & .categories {
+        display: flex;
+        padding: 10px;
+        align-items: center;
+        width: 100%;
+        margin-top: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        & .category {
+            all: unset;
+            padding: 5px;
+            background: var(--principal-background);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+            box-sizing: content-box;
+            min-height: 25px;
+            margin-bottom: 10px;
+            outline: none;
+            transition: 0.2s all;
+
+            &:active {
+                transform: scale(0.98);
+                box-shadow: 3px 2px 22px 1px rgba(0, 0, 0, 0.24);
+            }
+
+            &:hover {
+                cursor: pointer;
+                background: var(--third-background);
+            }
+
+            & svg {
+                height: 25px;
+                margin-right: 5px;
+            }
+        }
+    }
+
+    & .fr-view {
+        border-top: 1px solid #dadde1;
+        margin-top: 10px;
+        padding: 10px 20px 10px 20px;
+        max-width: 100%;
+        border-bottom: 1px solid #dadde1;
+    }
+
+    & .post-reacts-infos {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px 20px 10px 20px;
+        border-bottom: 1px solid #dadde1;
+        color: var(--secondary-text-color);
+        font-size: 0.875rem;
+
+        & svg {
+            height: 20px;
+            aspect-ratio: 1;
+        }
+
+        & .post-reacts-number {
+            display: flex;
+
+            & .post-likes, & .post-dislikes {
                 display: flex;
-                align-items: center;
-                width: 100%;
-                padding: 10px 20px;
+                margin-right: 10px;
 
-                & .post-action {
-                    text-decoration: none;
-                    color: inherit;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    width: 25%;
-                    padding: 10px;
-                    border-radius: 5px;
+                & svg {
+                    margin-right: 3px;
+                }
 
-                    &:hover {
-                        background: var(--principal-background);
-                        cursor: pointer;
-                    }
-
-                    & svg {
-                        height: 25px;
-                        aspect-ratio: 1;
-                        margin-right: 10px;
+                & .post-like-icon {
+                    & path {
+                        fill: var(--principal-color);
                     }
                 }
+
+                & .post-dislike-icon {
+                    & path {
+                        fill: red;
+                    }
+                }
+            }
+        }
+
+        & .post-comments-number {
+            display: flex;
+
+            & svg {
+                margin-right: 0;
+                margin-left: 3px;
+            }
+        }
+    }
+
+    & .post-actions {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 10px 20px;
+
+        & .post-action {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 25%;
+            padding: 10px;
+            border-radius: 5px;
+            outline: none;
+            transition: 0.2s all;
+
+            &:active {
+                transform: scale(0.98);
+                box-shadow: 3px 2px 22px 1px rgba(0, 0, 0, 0.24);
+            }
+
+            &:hover {
+                background: var(--principal-background);
+                cursor: pointer;
+            }
+
+            & svg {
+                height: 25px;
+                aspect-ratio: 1;
+                margin-right: 10px;
             }
         }
     }
@@ -913,11 +997,17 @@
             }
 
             &>div {
-                & span {
+                & a {
+                    all: unset;
                     font-weight: bolder;
                     font-size: 1.125rem;
                     display: inline-block;
                     margin-bottom: 3px;
+
+                    &:hover {
+                        cursor: pointer;
+                        text-decoration: underline;
+                    }
                 }
 
                 & .post-restriction {

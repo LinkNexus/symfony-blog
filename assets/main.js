@@ -82,7 +82,7 @@ console.log(typeof leftAsideMenuElements);
 if (Object.keys(leftAsideMenuElements).length !== 0) {
 
     leftAsideMenuElements[7].addEventListener('click', function (evt) {
-        evt.stopImmediatePropagation();
+        evt.preventDefault();
         this.style.display = 'none';
         for (const leftAsideMenuElement of leftAsideMenuElements) {
             if (leftAsideMenuElement.classList.contains('not-displayed')) {
@@ -92,7 +92,7 @@ if (Object.keys(leftAsideMenuElements).length !== 0) {
     })
 
     leftAsideMenuElements[13].addEventListener('click', function (evt) {
-        evt.stopImmediatePropagation();
+        evt.preventDefault();
         leftAsideMenuElements[7].style.display = 'flex';
         for (const leftAsideMenuElement of leftAsideMenuElements) {
             if (leftAsideMenuElement.classList.contains('not-displayed')) {
@@ -135,8 +135,9 @@ const postFormEditor = new FroalaEditor('#post_form_content', {
     language: 'en'
 })
 
+const submitButton = document.querySelector('.create-post-form>button[type="submit"]');
+
 function checkEditorContent() {
-    const submitButton = document.querySelector('.create-post-form>button[type="submit"]');
     if (submitButton) {
         if (postFormEditor.html) {
             let editorContent = postFormEditor.html.get(true);
@@ -164,8 +165,10 @@ if (postRestrictions) {
         if (selectedOption.innerText.includes('Friends except...') || selectedOption.innerText.includes('Specific friends')) {
             postRestrictionsHeader.innerText = selectedOption.innerText;
             postRestrictions.style.display = "block";
+            postFormRestrictionUsers.selectedIndex = -1;
         } else {
             postRestrictions.style.display = "none";
+            postFormRestrictionUsers.selectedIndex = -1;
         }
 
         postFormRestrictionUsers.selectedIndex = -1;
@@ -174,4 +177,26 @@ if (postRestrictions) {
     postFormRestrictionsSave.addEventListener('click', function (evt) {
         postRestrictions.style.display = "none";
     })
+}
+
+const postMenuButton = document.querySelector('.post-menu-button'),
+    postMenu = document.querySelector('.post-menu');
+
+if (postMenuButton) {
+    postMenuButton.addEventListener('click', function () {
+        postMenu.style.display = getComputedStyle(postMenu).display === 'flex' ? 'none' : 'flex';
+    })
+}
+
+const createPostFormTitle = document.querySelector('.create-post-form-container h2');
+
+if (submitButton && createPostFormTitle && createPostFormTitle.innerText === 'Update Post') {
+    submitButton.disabled = false;
+
+    if (postFormRestrictionsSelect.value.includes('friends_except') || postFormRestrictionsSelect.value.includes('specific_friends')) {
+        postRestrictions.style.display = "block";
+        console.log(1);
+    }
+
+    console.log(postFormRestrictionsSelect.value);
 }
