@@ -1,0 +1,383 @@
+{% for post in posts %}
+    <div class="post-block" id="post_{{ post.id }}">
+        <div class="post-header">
+            <div class="profile">
+                {% set postAvatarPath = 'images/' ~ post.owner.gender ~ '_icon.jpg' %}
+                <img src="{{ asset(postAvatarPath) }}" alt="">
+                <div>
+                    <a href="#" class="user-username">{{ post.owner.username }}</a>
+                    <span>{{ post.createdAt|ago }}</span>
+                </div>
+            </div>
+
+            <div id="post-menu{{ post.id }}" class="post-menu">
+                <div class="post-menu-action">
+                    <twig:ux:icon name="material-symbols:bookmark" />
+                    <div>
+                        <span class="principal-text">Save Post</span>
+                        <span>Add this to your saved items</span>
+                    </div>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="ph:code-bold" />
+                    <span class="principal-text">Embed</span>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="zondicons:shield" />
+                    <span class="principal-text">Report post to Admins</span>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="charm:circle-cross" />
+                    <span class="principal-text">Hide Post</span>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="mingcute:time-fill" />
+                    <div>
+                        <span class="principal-text">Snooze {{ post.owner.username }} for 30 days</span>
+                        <span>Temporarily stop seeing {{ post.owner.username }} posts.</span>
+                    </div>
+                </div>
+                <div class="post-menu-action">
+                    <twig:ux:icon name="solar:user-block-bold" />
+                    <div>
+                        <span class="principal-text">Block {{ post.owner.username }} profile</span>
+                        <span>You won't be able to see or contact each other</span>
+                    </div>
+                </div>
+                {% if post.postModifications is not empty %}
+                    <div id="see-history{{ post.id }}" class="see-history post-menu-action">
+                        <twig:ux:icon name="mdi:eye" />
+                        <span class="principal-text">See edit history</span>
+                    </div>
+                {% endif %}
+                {% if post.owner == user %}
+                    <div id="edit-post{{ post.id }}" class="edit-post post-menu-action">
+                        <twig:ux:icon name="ic:sharp-edit" />
+                        <span class="principal-text">Edit Post</span>
+                    </div>
+                {% endif %}
+
+                {% if post.owner == user or 'ROLE_ADMIN' in user.roles %}
+                    <div id="delete-post{{ post.id }}" class="delete-post post-menu-action">
+                        <twig:ux:icon name="material-symbols:delete" />
+                        <span class="principal-text">Delete Post</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <script>
+                const editPostButton{{ post.id }} = document.querySelector('#edit-post{{ post.id }}'),
+                    seeHistoryButton{{ post.id }} = document.querySelector('#see-history{{ post.id }}'),
+                    deletePostButton{{ post.id }} = document.querySelector('#delete-post{{ post.id }}');
+
+                if (editPostButton{{ post.id }}) {
+                    editPostButton{{ post.id }}.addEventListener('click', () => {
+                        window.location.href = '{{ path('app_post_edit', {'id': post.id}) }}';
+                    });
+                }
+
+                if (seeHistoryButton{{ post.id }}) {
+                    seeHistoryButton{{ post.id }}.addEventListener('click', () => {
+                        window.location.href = '{{ path('app_post_update_history', {'id': post.id}) }}';
+                    })
+                }
+
+                if (deletePostButton{{ post.id }}) {
+                    deletePostButton{{ post.id }}.addEventListener('click', () => {
+                        if (confirm('Do you really want to delete this post?')) {
+                            if (deletePost{{ post.id }}()) {
+                                document.getElementById('post_{{ post.id }}').style.display = 'none';
+                            }
+                        }
+                    });
+                }
+
+                function deletePost{{ post.id }}() {
+                    const url = '{{ path('app_post_delete', {'id': post.id}) }}';
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest' // Important for Symfony to detect AJAX request
+                        },
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                            return false;
+                        })
+                    ;
+
+                    return true;
+                }
+            </script>
+
+            <div id="post-menu-button{{ post.id }}" class="post-menu-button">
+                <twig:ux:icon name="solar:menu-dots-bold" />
+            </div>
+        </div>
+
+        <div class="categories">
+            {% for category in post.categories %}
+                <a href="#" class="category">
+                    {{ category.icon|raw }}
+                    <span>{{ category.name }}</span>
+                </a>
+            {% endfor %}
+        </div>
+
+        <div class="fr-view">
+            {{ post.content|raw }}
+        </div>
+
+        {% dump(post) %}
+
+        <div class="post-reacts-infos">
+            <div class="post-reacts-number">
+                {% for react in post.postReactions %}
+                    {% if react.owner == user %}
+                        {% if react.type == 'like' %}
+                            <style>
+                                #post_{{ post.id }} .like {
+                                    color: var(--principal-color);
+                                }
+                            </style>
+
+                        {% else %}
+                            <style>
+                                #post_{{ post.id }} .dislike {
+                                    color: red;
+                                }
+                            </style>
+
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                <div class="post-likes">
+                    <twig:ux:icon name="mdi:like" class="post-like-icon" />
+                    <span id="likes-number{{ post.id }}" class="likes-number">
+                        {% set likes = 0 %}
+                        {% for react in post.postReactions %}
+                            {% if react.type == 'like' %}
+                                {% set likes = likes + 1 %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {{ likes }}
+                    </span>
+                </div>
+                <div class="post-dislikes">
+                    <twig:ux:icon name="mdi:dislike" class="post-dislike-icon" />
+                    <span id="dislikes-number{{ post.id }}" class="dislikes-number">
+                        {% set dislikes = 0 %}
+                        {% for react in post.postReactions %}
+                            {% if react.type == 'dislike' %}
+                                {% set dislikes = dislikes + 1 %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {{ dislikes }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="post-comments-number">
+                <span>100</span>
+                <twig:ux:icon name="iconamoon:comment-fill" />
+            </div>
+        </div>
+
+        <div class="post-actions">
+            <a href="#" id="like{{ post.id }}" class="like post-action">
+                <twig:ux:icon name="uiw:like-o" />
+                <span>Like</span>
+            </a>
+            <a href="#" id="dislike{{ post.id }}" class="dislike post-action">
+                <twig:ux:icon name="uiw:dislike-o" />
+                <span class="dislikes-number">Dislike</span>
+            </a>
+            <a href="{{ path('app_post_show', { 'id': post.id }) }}#comments" class="post-action">
+                <twig:ux:icon name="iconamoon:comment-light" />
+                <span>Comment</span>
+            </a>
+            <a href="#" class="share post-action">
+                <twig:ux:icon name="uil:share" />
+                <span>Share</span>
+            </a>
+        </div>
+        <div class="post-comments">
+            <div class="filters-block">
+                <div id="selected-filter{{ post.id }}" class="selected-filter">
+                    <span>Oldest</span>
+                    <twig:ux:icon name="icons8:chevron-down" />
+                </div>
+                <div id="filters{{ post.id }}" class="filters">
+                    <div class="filter">
+                        <span class="filter-title">More Reactions</span>
+                        <span class="filter-text">Show comments with the highest number of reactions first</span>
+                    </div>
+                    <div class="filter">
+                        <span class="filter-title">Less Reactions</span>
+                        <span class="filter-text">Show comments with the lowest number of reactions first</span>
+                    </div>
+                    <div class="filter oldest-comments">
+                        <span class="filter-title">Oldest</span>
+                        <span class="filter-text">Show all oldest comments first</span>
+                    </div>
+                    <div class="filter newest-comments">
+                        <span class="filter-title">Newest</span>
+                        <span class="filter-text">Show all newest comments first</span>
+                    </div>
+                </div>
+                <script>
+                    const selectedFilter{{ post.id }} = document.getElementById('selected-filter{{ post.id }}'),
+                        filters{{ post.id }} = document.getElementById('filters{{ post.id }}');
+
+                    selectedFilter{{ post.id }}.addEventListener('click', () => {
+                        filters{{ post.id }}.style.display === 'flex' ? filters{{ post.id }}.style.display = 'none' : filters{{ post.id }}.style.display = 'flex';
+                    });
+                </script>
+            </div>
+            <div class="comment-bar">
+                {% set avatarPath = 'images/' ~ user.gender ~ '_icon.jpg' %}
+                <img src="{{ asset(avatarPath) }}" alt="profile_picture">
+                <form action="">
+                    <textarea onclick="location.href = '{{ path('app_post_show', { id: post.id }) }}'" class="form-control comment-input" placeholder="Comment as {{ user.username }}"></textarea>
+                    <twig:ux:icon name="fa-brands:telegram-plane" id="comment-form-button-{{ post.id }}" data-post-id="{{ post.id|trans }}" />
+                </form>
+            </div>
+            <div class="comments"></div>
+        </div>
+    </div>
+
+    <script>
+        const likeButton{{ post.id }} = document.querySelector('#like{{ post.id }}'),
+            dislikeButton{{ post.id }} = document.querySelector('#dislike{{ post.id }}'),
+            likes{{ post.id }} = document.querySelector('#likes-number{{ post.id }}'),
+            dislikes{{ post.id }} = document.querySelector('#dislikes-number{{ post.id }}'),
+            shareButton{{ post.id }} = document.querySelector('#post_{{ post.id }} .share');
+
+        let likesNumber{{ post.id }} = Number(likes{{ post.id }}.innerText),
+            dislikesNumber{{ post.id }} = Number(dislikes{{ post.id }}.innerText);
+
+        likeButton{{ post.id }}.addEventListener('click', function (evt) {
+            evt.preventDefault();
+
+            if (reactToPost{{ post.id }}(this, 'like')) {
+                if (getComputedStyle(dislikeButton{{ post.id }}).color === 'rgb(255, 0, 0)') {
+                    dislikesNumber{{ post.id }} -= 1;
+                    dislikes{{ post.id }}.innerText = dislikesNumber{{ post.id }};
+
+                    likesNumber{{ post.id }} += 1;
+                    likes{{ post.id }}.innerText = likesNumber{{ post.id }};
+
+                    this.style.color = 'var(--principal-color)';
+                    dislikeButton{{ post.id }}.style.color = 'inherit';
+                }
+
+                else if (getComputedStyle(this).color === 'rgb(35, 182, 217)') {
+                    likesNumber{{ post.id }} -= 1;
+                    likes{{ post.id }}.innerText = likesNumber{{ post.id }};
+                    this.style.color = 'inherit';
+                }
+
+                else {
+                    likesNumber{{ post.id }} += 1;
+                    likes{{ post.id }}.innerText = likesNumber{{ post.id }};
+
+                    this.style.color = 'var(--principal-color)';
+                    dislikeButton{{ post.id }}.style.color = 'inherit';
+                }
+            }
+        })
+
+        dislikeButton{{ post.id }}.addEventListener('click', function (evt) {
+            evt.preventDefault();
+
+            if (reactToPost{{ post.id }}(this, 'dislike')) {
+                if (getComputedStyle(likeButton{{ post.id }}).color === 'rgb(35, 182, 217)') {
+                    likesNumber{{ post.id }} -= 1;
+                    likes{{ post.id }}.innerText = likesNumber{{ post.id }};
+
+                    dislikesNumber{{ post.id }} += 1;
+                    dislikes{{ post.id }}.innerText = dislikesNumber{{ post.id }};
+
+                    this.style.color = 'red';
+                    likeButton{{ post.id }}.style.color = 'inherit';
+                }
+
+                else if (getComputedStyle(this).color === 'rgb(255, 0, 0)') {
+                    dislikesNumber{{ post.id }} -= 1;
+                    dislikes{{ post.id }}.innerText = dislikesNumber{{ post.id }};
+                    this.style.color = 'inherit';
+                }
+
+                else {
+                    dislikesNumber{{ post.id }} += 1;
+                    dislikes{{ post.id }}.innerText = dislikesNumber{{ post.id }};
+
+                    this.style.color = 'red';
+                    likeButton{{ post.id }}.style.color = 'inherit';
+                }
+            }
+        });
+
+        shareButton{{ post.id }}.addEventListener('click', function (evt) {
+            evt.preventDefault();
+            navigator.clipboard.writeText('{{ url('app_post_show', { 'id': post.id })|escape('js') }}')
+                .then(() => {
+                    alert('Link copied to clipboard!');
+                }).catch(err => {
+                    alert('Failed to copy Link');
+                })
+            ;
+        })
+
+        /**
+         *
+         * @param {Element} element
+         * @param {string} reaction
+         * @returns {boolean}
+         */
+        function reactToPost{{ post.id }}(element, reaction = 'like')
+        {
+            const url = '{{ path('app_post_react', { id: post.id }) }}';
+            data = {
+                reaction: reaction
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest' // Important for Symfony to detect AJAX request
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    return false;
+                })
+            ;
+
+            return true;
+        }
+
+        const postMenuButton{{ post.id }} = document.querySelector('#post-menu-button{{ post.id }}'),
+            postMenu{{ post.id }} = document.querySelector('#post-menu{{ post.id }}');
+
+        postMenuButton{{ post.id }}.addEventListener('click', function () {
+            console.log({{ post.id }});
+            postMenu{{ post.id }}.style.display = getComputedStyle(postMenu{{ post.id }}).display === 'flex' ? 'none' : 'flex';
+        });
+    </script>
+{% endfor %}
