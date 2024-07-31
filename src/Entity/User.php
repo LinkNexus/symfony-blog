@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
 #[UniqueEntity('email', message: 'There is already an account with this email')]
 #[UniqueEntity('slug')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -401,5 +401,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return array(
+            "id" => $this->getId(),
+            "username" => $this->getUsername(),
+            "email" => $this->getEmail(),
+            "password" => $this->getPassword(),
+            "roles" => $this->getRoles(),
+            "joinedAt" => $this->getJoinedAt(),
+            "slug" => $this->getSlug(),
+            "posts" => $this->getPosts(),
+            "postAudiences" => $this->getPostAudiences(),
+            "postReactions" => $this->getPostReactions(),
+            "comments" => $this->getComments(),
+            "gender" => $this->getGender()
+        );
     }
 }

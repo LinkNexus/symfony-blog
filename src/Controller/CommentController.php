@@ -68,21 +68,7 @@ class CommentController extends AbstractController
             default => $this->entityManager->getRepository(Comment::class)->findBy(['post' => $post]),
         };
 
-        $data = [];
-
-        for ($i = 0; $i < count($comments); $i++) {
-            $comment = [
-                'id' => $comments[$i]->getId(),
-                'content' => $comments[$i]->getContent(),
-                'author' => [
-                    'username' => $comments[$i]->getOwner()->getUsername(),
-                    'gender' => $comments[$i]->getOwner()->getGender(),
-                ],
-                'createdAt' => $comments[$i]->getCreatedAt()
-            ];
-            $data[$i] = $comment;
-        }
-        return new JsonResponse($data);
+        return new JsonResponse($comments);
     }
 
     #[Route('/upload/images', methods: ['POST'])]

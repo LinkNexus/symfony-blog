@@ -187,7 +187,14 @@
             </div>
 
             <div class="post-comments-number">
-                <span>100</span>
+                <span>
+                    {% set commentsNumber = 0 %}
+                    {% for comment in post.comments %}
+                        {% set commentsNumber = commentsNumber + 1 %}
+                    {% endfor %}
+
+                    {{ commentsNumber }}
+                </span>
                 <twig:ux:icon name="iconamoon:comment-fill" />
             </div>
         </div>
@@ -251,7 +258,7 @@
                     <twig:ux:icon name="fa-brands:telegram-plane" id="comment-form-button-{{ post.id }}" data-post-id="{{ post.id|trans }}" />
                 </form>
             </div>
-            <div class="comments"></div>
+            <div class="comments" id="comments"></div>
         </div>
     </div>
 

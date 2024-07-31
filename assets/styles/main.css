@@ -1062,6 +1062,83 @@
                 }
             }
         }
+
+        & .comments {
+            & .comment {
+                display: flex;
+                margin-bottom: 20px;
+
+                & img {
+                    width: 50px;
+                    min-width: 50px;
+                    height: 50px;
+                    aspect-ratio: 1;
+                    border-radius: 50%;
+                    margin-right: 10px;
+                }
+
+                & .comment-content {
+                    background: var(--principal-background);
+                    padding: 10px;
+                    border-radius: 10px;
+                    margin-right: 10px;
+                    color: var(--sixth-background);
+                    height: fit-content;
+                    width: fit-content;
+
+                    & .user-username {
+                        all: unset;
+                        font-weight: bolder;
+                        font-size: 1rem;
+                        display: inline-block;
+                        margin-bottom: 1px;
+
+                        &:hover {
+                            cursor: pointer;
+                            text-decoration: underline;
+                        }
+                    }
+                }
+
+                & .comment-menu-block {
+                    align-self: center;
+
+                    & .comment-menu-icon {
+                        aspect-ratio: 1;
+                        height: 30px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+
+                        &:hover {
+                            background: var(--third-background);
+                            cursor: pointer;
+                        }
+                    }
+
+                    & .comment-menu {
+                        display: none;
+                        padding: 10px;
+                        background: var(--second-background);
+                        border: 1px solid var(--third-background);
+                        border-radius: 10px;
+                        margin-top: 5px;
+
+                        & .comment-menu-action {
+                            padding: 5px;
+                            color: var(--sixth-background);
+                            border-radius: 5px;
+
+                            &:hover {
+                                background: var(--third-background);
+                                cursor: pointer;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

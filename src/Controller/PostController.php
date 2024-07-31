@@ -19,9 +19,11 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/post', name: 'app_post_')]
+#[IsGranted('ROLE_USER')]
 class PostController extends AbstractController
 {
     public function __construct(
@@ -285,7 +287,7 @@ class PostController extends AbstractController
         return $this->render('post/update_history.html.twig', [
             'post' => $post,
             'postModifications' => $postModifications,
-            'user' => $this->getUser()
+            'user' => $post->getOwner()
         ]);
     }
 }

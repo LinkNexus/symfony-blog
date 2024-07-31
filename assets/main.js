@@ -27,6 +27,29 @@ function froalaDisplayError(editor, error, response) {
 
 window.froalaDisplayError = froalaDisplayError;
 
+async function getCurrentUser() {
+    const url = window.location.protocol + "//" + window.location.host + "/current-user";
+
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest' // Important for Symfony to detect AJAX request
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            return data;
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            return false;
+        })
+}
+const currentUser = await getCurrentUser();
+console.log(await getCurrentUser());
+
 // Main Header
 
 const fakeSearchBar = document.querySelector('.fake-search-bar'),
@@ -284,6 +307,16 @@ if (!fakeUploadPostInput && commentsBlock) {
                 console.error('Error:', error);
                 return false;
             })
+
+        const commentBlocks = document.querySelectorAll('.comment');
+
+        for (const commentBlock of commentBlocks) {
+            if (commentBlock) {
+                commentBlock.remove();
+            }
+        }
+
+        displayComments("oldest");
     }
 
 
@@ -343,26 +376,82 @@ if (!fakeUploadPostInput && commentsBlock) {
 
         if (data) {
             for (const datum of data) {
-                let commentBlock = document.createElement('div');
+                let commentBlock = document.createElement('div'),
+                    commentContent = document.createElement("div"),
+                    commentMenuBlock = document.createElement("div"),
+                    commentMenuIcon = document.createElement("div"),
+                    commentMenu = document.createElement("div"),
+                    userUsername = document.createElement("a"),
+                    commentContext = document.createElement("div"),
+                    profileImage = document.createElement("img");
+
                 commentBlock.classList.add("comment");
+                commentContent.classList.add("comment-content");
+                commentMenu.classList.add("comment-menu");
+                commentMenuIcon.classList.add("comment-menu-icon");
+                commentMenuBlock.classList.add("comment-menu-block");
+                userUsername.classList.add("user-username");
+                commentContext.classList.add("fr-view");
 
-                let content = `<div class="comment-content" id="comment-content-${datum.id}">${datum.content}</div>`;
-                commentBlock.innerHTML += content;
+                commentContext.innerHTML += datum.content;
+                userUsername.innerText += datum.author.username;
+                commentMenuIcon.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1em\" height=\"1em\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M7 12a2 2 0 1 1-4 0a2 2 0 0 1 4 0m7 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0m7 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0\"/></svg>";
+                profileImage.setAttribute("src", `../images/${datum.author.gender.toLowerCase()}_icon.jpg`);
+                profileImage.setAttribute("alt", "profile-image");
 
+                commentMenuIcon.addEventListener("click", function () {
+                    commentMenu.style.display = getComputedStyle(commentMenu).display === "block" ? "none" : "block";
+                })
+
+                commentContent.appendChild(userUsername);
+                commentContent.appendChild(commentContext);
+                commentMenuBlock.appendChild(commentMenuIcon);
+
+                for (let i = 0; i < 5; i++) {
+                    let commentMenuAction = document.createElement("div");
+
+                    switch (i) {
+                        case 0:
+                            if (datum.author.username === currentUser.username)
+                                commentMenuAction.style.display = "none";
+                            commentMenuAction.innerHTML = "Hide Comment";
+                            break;
+                        case 1:
+                            if (datum.author.username === currentUser.username)
+                                commentMenuAction.style.display = "none";
+                            commentMenuAction.innerHTML = `Block ${datum.author.username.split(" ")[0]}`;
+                            break;
+                        case 2:
+                            if (datum.author.username === currentUser.username)
+                                commentMenuAction.style.display = "none";
+                            commentMenuAction.innerHTML = `Report Comment`;
+                            break;
+                        case 3:
+                            if (datum.author.username !== currentUser.username)
+                                commentMenuAction.style.display = "none";
+                            commentMenuAction.innerHTML = "Edit Comment";
+                            break;
+                        case 4:
+                            if (datum.author.username !== currentUser.username && !currentUser.roles.includes("ROLE_ADMIN"))
+                                commentMenuAction.style.display = "none";
+                            commentMenuAction.innerHTML = "Delete Comment";
+                            break;
+                    }
+                    commentMenuAction.classList.add("comment-menu-action");
+                    commentMenu.appendChild(commentMenuAction);
+                }
+
+                commentMenuBlock.appendChild(commentMenu);
+                commentBlock.appendChild(profileImage);
+                commentBlock.appendChild(commentContent);
+                commentBlock.appendChild(commentMenuBlock);
                 commentsBlock.appendChild(commentBlock);
-
-                console.log(datum);
-                console.log(datum.content);
             }
         }
     }
 
     // Initial Check
     checkCommentFormContent();
-
-    commentFormButton.addEventListener('click', function () {
-        submitComment(commentFormEditor, this)
-    });
 
     // Initial display of Comments
     displayComments();
@@ -371,7 +460,9 @@ if (!fakeUploadPostInput && commentsBlock) {
         const commentBlocks = document.querySelectorAll('.comment');
 
         for (const commentBlock of commentBlocks) {
-            commentBlock.remove();
+            if (commentBlock) {
+                commentBlock.remove();
+            }
         }
 
         displayComments("newest");

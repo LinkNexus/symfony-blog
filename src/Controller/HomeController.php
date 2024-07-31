@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Form\CommentFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -16,6 +17,12 @@ class HomeController extends AbstractController
 {
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {}
+
+    #[Route('/current-user', name: 'current-user', methods: ["GET", 'POST'])]
+    public function getCurrentUser(): JsonResponse
+    {
+        return new JsonResponse($this->getUser());
+    }
 
     #[Route('/', name: 'app_home')]
     public function index(): Response
