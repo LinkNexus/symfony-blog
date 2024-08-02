@@ -1069,9 +1069,9 @@
                 margin-bottom: 20px;
 
                 & img {
-                    width: 50px;
-                    min-width: 50px;
-                    height: 50px;
+                    width: 40px;
+                    min-width: 40px;
+                    height: 40px;
                     aspect-ratio: 1;
                     border-radius: 50%;
                     margin-right: 10px;
@@ -1081,10 +1081,10 @@
                     background: var(--principal-background);
                     padding: 10px;
                     border-radius: 10px;
-                    margin-right: 10px;
                     color: var(--sixth-background);
                     height: fit-content;
                     width: fit-content;
+                    min-width: 100%;
 
                     & .user-username {
                         all: unset;
@@ -1100,8 +1100,62 @@
                     }
                 }
 
+                & .comment-actions {
+                    display: flex;
+                    font-size: 0.875rem;
+
+                    & .comment-date {
+                        margin-right: 10px;
+                        cursor: pointer;
+                        height: fit-content;
+                        width: fit-content;
+
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+
+                    & .comment-react{
+                        font-weight: bold;
+                        margin-right: 10px;
+                        cursor: pointer;
+                        height: fit-content;
+                        width: fit-content;
+
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+
+                    & .comment-reactions {
+                        display: flex;
+
+                        & .comment-likes-block, & .comment-dislikes-block {
+                            display: flex;
+                            margin-right: 5px;
+                            align-items: center;
+                            cursor: pointer;
+
+                            & svg {
+                                height: 15px;
+                                aspect-ratio: 1;
+                                margin-left: 3px;
+                            }
+                        }
+
+                        & .comment-likes-block svg {
+                            color: var(--principal-color);
+                        }
+
+                        & .comment-dislikes-block svg {
+                            color: red;
+                        }
+                    }
+                }
+
                 & .comment-menu-block {
                     align-self: center;
+                    margin-left: 10px;
 
                     & .comment-menu-icon {
                         aspect-ratio: 1;

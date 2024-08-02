@@ -5,6 +5,9 @@ import $ from 'jquery';
 import FroalaEditor from 'froala-editor';
 import 'froala-editor/css/froala_editor.pkgd.min.css';
 import 'froala-editor/css/froala_style.min.css';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 
 // Load your languages
 import 'froala-editor/js/languages/en_gb.js';
@@ -27,6 +30,8 @@ function froalaDisplayError(editor, error, response) {
 
 window.froalaDisplayError = froalaDisplayError;
 
+dayjs.extend(relativeTime);
+
 async function getCurrentUser() {
     const url = window.location.protocol + "//" + window.location.host + "/current-user";
 
@@ -39,7 +44,6 @@ async function getCurrentUser() {
     })
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             return data;
         })
         .catch((error) => {
@@ -48,7 +52,6 @@ async function getCurrentUser() {
         })
 }
 const currentUser = await getCurrentUser();
-console.log(await getCurrentUser());
 
 // Main Header
 
@@ -121,8 +124,6 @@ function checkMenuSearchInput() {
 // Left Aside Menu of Home Page
 
 const leftAsideMenuElements = document.querySelectorAll('.left-aside-menu-element');
-
-console.log(typeof leftAsideMenuElements);
 
 if (Object.keys(leftAsideMenuElements).length !== 0) {
 
@@ -246,17 +247,16 @@ if (submitButton && createPostFormTitle && createPostFormTitle.innerText === 'Up
 
     if (postFormAudienceSelect.value.includes('friends_except') || postFormAudienceSelect.value.includes('specific_friends')) {
         postAudience.style.display = "block";
-        console.log(1);
     }
-
-    console.log(postFormAudienceSelect.value);
 }
 
 //Comment Post Form
 
 const newestCommentsFilter = document.querySelector('.newest-comments'),
     oldestCommentsFilter = document.querySelector('.oldest-comments'),
-    commentsBlock = document.querySelector('.comments');
+    commentsBlock = document.querySelector('.comments'),
+    moreReactionsFilter = document.querySelector(".more-reactions"),
+    lessReactionsFilter = document.querySelector(".less-reactions");
 
 // Check if we're on the post page
 if (!fakeUploadPostInput && commentsBlock) {
@@ -280,6 +280,7 @@ if (!fakeUploadPostInput && commentsBlock) {
             contentChanged: checkCommentFormContent
         },
         saveURL: '/post/create',
+        placeholderText: `Comment as ${currentUser.username}`
     }),
         commentFormButton = document.querySelector('.comment-bar form svg');
 
@@ -300,7 +301,6 @@ if (!fakeUploadPostInput && commentsBlock) {
         })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 return true;
             })
             .catch((error) => {
@@ -332,7 +332,6 @@ if (!fakeUploadPostInput && commentsBlock) {
                 commentFormButton.addEventListener('click', submitComment);
                 commentFormButton.style.color = "var(--principal-color)";
                 commentFormButton.style.cursor = "pointer";
-                console.log('Fuck You');
             }
         } else {
             commentFormButton.removeEventListener('click', submitComment);
@@ -362,7 +361,6 @@ if (!fakeUploadPostInput && commentsBlock) {
         })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 return data;
             })
             .catch((error) => {
@@ -376,36 +374,144 @@ if (!fakeUploadPostInput && commentsBlock) {
 
         if (data) {
             for (const datum of data) {
+
+                // All the necessary HTML Elements for the comment
                 let commentBlock = document.createElement('div'),
+                    commentContentBlock = document.createElement("div"),
                     commentContent = document.createElement("div"),
                     commentMenuBlock = document.createElement("div"),
                     commentMenuIcon = document.createElement("div"),
                     commentMenu = document.createElement("div"),
                     userUsername = document.createElement("a"),
                     commentContext = document.createElement("div"),
-                    profileImage = document.createElement("img");
+                    profileImage = document.createElement("img"),
+                    commentActionsBlock = document.createElement("div"),
+                    commentDate = document.createElement("span"),
+                    commentLike = document.createElement("span"),
+                    commentDislike = document.createElement("span"),
+                    commentReply = document.createElement("span"),
+                    commentReactions = document.createElement("div"),
+                    commentLikesBlock = document.createElement("div"),
+                    commentDislikesBlock = document.createElement("div"),
+                    commentLikes = document.createElement("span"),
+                    commentDislikes = document.createElement("span");
 
+                let likesNumber = 0,
+                    dislikesNumber = 0;
+
+                // Giving each element a class
                 commentBlock.classList.add("comment");
+                commentContentBlock.classList.add("comment-content-block");
                 commentContent.classList.add("comment-content");
                 commentMenu.classList.add("comment-menu");
                 commentMenuIcon.classList.add("comment-menu-icon");
                 commentMenuBlock.classList.add("comment-menu-block");
                 userUsername.classList.add("user-username");
                 commentContext.classList.add("fr-view");
+                commentDate.classList.add("comment-date");
+                commentLike.classList.add("comment-like", "comment-react");
+                commentDislike.classList.add("comment-dislike", "comment-react");
+                commentReply.classList.add("comment-reply");
+                commentReactions.classList.add("comment-reactions");
+                commentActionsBlock.classList.add("comment-actions");
+                commentLikesBlock.classList.add("comment-likes-block");
+                commentDislikesBlock.classList.add("comment-dislikes-block");
 
+                // Filling the elements with their respective contents and append them to their respective parents
                 commentContext.innerHTML += datum.content;
                 userUsername.innerText += datum.author.username;
                 commentMenuIcon.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1em\" height=\"1em\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M7 12a2 2 0 1 1-4 0a2 2 0 0 1 4 0m7 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0m7 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0\"/></svg>";
                 profileImage.setAttribute("src", `../images/${datum.author.gender.toLowerCase()}_icon.jpg`);
                 profileImage.setAttribute("alt", "profile-image");
+                commentDate.innerHTML = reduceDateFormat(dayjs(datum.createdAt.date).fromNow());
+                commentLike.innerHTML = "Like";
+                commentDislike.innerHTML = "Dislike";
+
+                for (const reaction of datum.reactions) {
+                    if (reaction.type === "like")
+                        likesNumber++;
+                    else dislikesNumber++;
+
+                    if (reaction.owner.id === currentUser.id) {
+                        if (reaction.type === "like")
+                            commentLike.style.color = "var(--principal-color)";
+                        else commentDislike.style.color = "red";
+                    }
+                }
+
+                commentLikes.innerText = likesNumber.toString();
+                commentDislikes.innerText = dislikesNumber.toString();
+
+                commentLikesBlock.appendChild(commentLikes);
+                commentLikesBlock.innerHTML += "<svg viewBox=\"0 0 24 24\" fill=\"currentColor\" class=\"post-like-icon\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M23 10a2 2 0 0 0-2-2h-6.32l.96-4.57c.02-.1.03-.21.03-.32c0-.41-.17-.79-.44-1.06L14.17 1L7.59 7.58C7.22 7.95 7 8.45 7 9v10a2 2 0 0 0 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73zM1 21h4V9H1z\"></path></svg>";
+                commentDislikesBlock.appendChild(commentDislikes);
+                commentDislikesBlock.innerHTML += "<svg viewBox=\"0 0 24 24\" fill=\"currentColor\" class=\"post-dislike-icon\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M19 15h4V3h-4m-4 0H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2a2 2 0 0 0 2 2h6.31l-.95 4.57c-.02.1-.03.2-.03.31c0 .42.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5a2 2 0 0 0-2-2\"></path></svg>";
+
+                commentReactions.appendChild(commentLikesBlock);
+                commentReactions.appendChild(commentDislikesBlock);
+                commentActionsBlock.appendChild(commentDate);
+                commentActionsBlock.appendChild(commentLike);
+                commentActionsBlock.appendChild(commentDislike);
+                commentActionsBlock.appendChild(commentReactions);
 
                 commentMenuIcon.addEventListener("click", function () {
                     commentMenu.style.display = getComputedStyle(commentMenu).display === "block" ? "none" : "block";
+                });
+
+                commentDate.addEventListener("mouseover", function () {
+                    this.innerHTML = dayjs(datum.createdAt.date).format('dddd, MMMM D, YYYY');
+                });
+
+                commentDate.addEventListener("mouseleave", function () {
+                    this.innerHTML = reduceDateFormat(dayjs(datum.createdAt.date).fromNow());
+                });
+
+                commentDislike.addEventListener("click", async function () {
+                    if (await reactToComment(datum.id, "dislike")) {
+                        if (getComputedStyle(commentLike).color === 'rgb(35, 182, 217)') {
+                            likesNumber--;
+                            dislikesNumber++;
+                            this.style.color = "red";
+                            commentLike.style.color = "inherit";
+                        } else if (getComputedStyle(this).color === 'rgb(255, 0, 0)') {
+                            dislikesNumber--;
+                            this.style.color = "inherit";
+                        } else {
+                            dislikesNumber++;
+                            this.style.color = "red";
+                        }
+
+                        commentLikes.innerText = likesNumber.toString();
+                        commentDislikes.innerText = dislikesNumber.toString();
+                    }
+                });
+
+                commentLike.addEventListener("click", async function () {
+                    if (await reactToComment(datum.id)) {
+                        if (getComputedStyle(commentDislike).color === 'rgb(255, 0, 0)') {
+                            dislikesNumber--;
+                            likesNumber++;
+                            this.style.color = "var(--principal-color)";
+                            commentDislike.style.color = "inherit";
+                        } else if (getComputedStyle(this).color === 'rgb(35, 182, 217)') {
+                            likesNumber--;
+                            this.style.color = "inherit";
+                        } else {
+                            likesNumber++;
+                            this.style.color = "var(--principal-color)";
+                        }
+
+                        commentLikes.innerText = likesNumber.toString();
+                        commentDislikes.innerText = dislikesNumber.toString();
+                    }
                 })
 
                 commentContent.appendChild(userUsername);
                 commentContent.appendChild(commentContext);
                 commentMenuBlock.appendChild(commentMenuIcon);
+
+                commentContentBlock.appendChild(commentContent);
+                commentContentBlock.appendChild(commentActionsBlock);
 
                 for (let i = 0; i < 5; i++) {
                     let commentMenuAction = document.createElement("div");
@@ -443,7 +549,7 @@ if (!fakeUploadPostInput && commentsBlock) {
 
                 commentMenuBlock.appendChild(commentMenu);
                 commentBlock.appendChild(profileImage);
-                commentBlock.appendChild(commentContent);
+                commentBlock.appendChild(commentContentBlock);
                 commentBlock.appendChild(commentMenuBlock);
                 commentsBlock.appendChild(commentBlock);
             }
@@ -456,7 +562,7 @@ if (!fakeUploadPostInput && commentsBlock) {
     // Initial display of Comments
     displayComments();
 
-    newestCommentsFilter.addEventListener('click', function () {
+    function deleteAllComments() {
         const commentBlocks = document.querySelectorAll('.comment');
 
         for (const commentBlock of commentBlocks) {
@@ -464,7 +570,47 @@ if (!fakeUploadPostInput && commentsBlock) {
                 commentBlock.remove();
             }
         }
+    }
 
+    newestCommentsFilter.addEventListener('click', function () {
+        deleteAllComments();
         displayComments("newest");
     });
+
+    oldestCommentsFilter.addEventListener("click", function () {
+        deleteAllComments();
+        displayComments("oldest");
+    })
+
+    function reactToComment(id, reaction = "like") {
+        const url = window.location.protocol + "//" + window.location.host + "/comment/"+ id + "/react",
+            data = {
+                reaction: reaction
+            };
+
+        return fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest' // Important for Symfony to detect AJAX request
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                return true;
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                return false;
+            })
+            ;
+    }
+}
+
+function reduceDateFormat(date) {
+    const words = date.split(" ");
+    const secondWord = words[1];
+
+    return words[0] + secondWord.charAt(0);
 }

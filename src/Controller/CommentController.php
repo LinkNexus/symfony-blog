@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Comment;
+use App\Entity\CommentReaction;
 use App\Entity\Post;
 use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
@@ -69,6 +70,65 @@ class CommentController extends AbstractController
         };
 
         return new JsonResponse($comments);
+    }
+
+    #[Route('/{id}/react', name: 'react')]
+    public function react(
+        int $id,
+        Request $request
+    ): JsonResponse
+    {
+        $comment = $this->entityManager->getRepository(Comment::class)->find($id);
+
+        if (!$comment) {
+            $this->addFlash('danger', 'The Requested Comment is not found');
+        }
+
+        $jsonData = $request->getContent();
+        $data = json_decode($jsonData, true);
+        $reaction = $data['reaction'];
+
+        if ($reaction === 'like' || $reaction == 'dislike') {
+            $commentReaction = $this->entityManager->getRepository(CommentReaction::class)
+                ->findOneBy([
+                    'comment' => $comment,
+                    'owner' => $this->getUser()
+                ]);
+
+            if ($commentReaction) {
+                if ($reaction === $commentReaction->getType()) {
+                    $this->entityManager->remove($commentReaction);
+                } else {
+                    $commentReaction->setType($reaction);
+                }
+            } else {
+                $commentReaction = new CommentReaction();
+
+                $commentReaction
+                    ->setComment($comment)
+                    ->setOwner($this->getUser())
+                    ->setType($reaction);
+
+                $comment->addCommentReaction($commentReaction);
+
+                $this->entityManager->persist($commentReaction);
+            }
+
+            $this->entityManager->flush();
+
+            $response = [
+                'message' => 'Reaction Updated!',
+                'comment' => $comment->getId(),
+                'id' => $id
+            ];
+        } else {
+            $response = [
+                'message' => 'Incorrect reaction',
+                'data' => $data,
+            ];
+        }
+
+        return new JsonResponse($response);
     }
 
     #[Route('/upload/images', methods: ['POST'])]

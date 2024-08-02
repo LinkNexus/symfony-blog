@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CommentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -31,10 +33,17 @@ class Comment implements \JsonSerializable
     #[ORM\JoinColumn(nullable: false)]
     private ?User $owner = null;
 
+    /**
+     * @var Collection<int, CommentReaction>
+     */
+    #[ORM\OneToMany(targetEntity: CommentReaction::class, mappedBy: 'comment')]
+    private Collection $commentReactions;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+        $this->commentReactions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -102,7 +111,7 @@ class Comment implements \JsonSerializable
         return $this;
     }
 
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): array
     {
         return array(
             "id" => $this->id,
@@ -111,6 +120,37 @@ class Comment implements \JsonSerializable
             "updatedAt" => $this->updatedAt,
             "post" => $this->post,
             "author" => $this->owner,
+            "reactions" => $this->commentReactions->toArray()
         );
+    }
+
+    /**
+     * @return Collection<int, CommentReaction>
+     */
+    public function getCommentReactions(): Collection
+    {
+        return $this->commentReactions;
+    }
+
+    public function addCommentReaction(CommentReaction $commentReaction): static
+    {
+        if (!$this->commentReactions->contains($commentReaction)) {
+            $this->commentReactions->add($commentReaction);
+            $commentReaction->setComment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommentReaction(CommentReaction $commentReaction): static
+    {
+        if ($this->commentReactions->removeElement($commentReaction)) {
+            // set the owning side to null (unless already changed)
+            if ($commentReaction->getComment() === $this) {
+                $commentReaction->setComment(null);
+            }
+        }
+
+        return $this;
     }
 }

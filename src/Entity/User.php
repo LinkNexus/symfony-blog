@@ -101,6 +101,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \JsonSe
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'owner', orphanRemoval: true)]
     private Collection $comments;
 
+    /**
+     * @var Collection<int, CommentReaction>
+     */
+    #[ORM\OneToMany(targetEntity: CommentReaction::class, mappedBy: 'owner')]
+    private Collection $commentReactions;
+
     public function __construct()
     {
         $this->joinedAt = new \DateTimeImmutable();
@@ -109,6 +115,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \JsonSe
         $this->postReactions = new ArrayCollection();
         $this->postAudiences = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->commentReactions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -417,7 +424,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \JsonSe
             "postAudiences" => $this->getPostAudiences(),
             "postReactions" => $this->getPostReactions(),
             "comments" => $this->getComments(),
-            "gender" => $this->getGender()
+            "gender" => $this->getGender(),
         );
+    }
+
+    /**
+     * @return Collection<int, CommentReaction>
+     */
+    public function getCommentReactions(): Collection
+    {
+        return $this->commentReactions;
+    }
+
+    public function addCommentReaction(CommentReaction $commentReaction): static
+    {
+        if (!$this->commentReactions->contains($commentReaction)) {
+            $this->commentReactions->add($commentReaction);
+            $commentReaction->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommentReaction(CommentReaction $commentReaction): static
+    {
+        if ($this->commentReactions->removeElement($commentReaction)) {
+            // set the owning side to null (unless already changed)
+            if ($commentReaction->getOwner() === $this) {
+                $commentReaction->setOwner(null);
+            }
+        }
+
+        return $this;
     }
 }
