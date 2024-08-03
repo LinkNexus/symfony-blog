@@ -33,7 +33,7 @@ window.froalaDisplayError = froalaDisplayError;
 dayjs.extend(relativeTime);
 
 async function getCurrentUser() {
-    const url = window.location.protocol + "//" + window.location.host + "/current-user";
+    const url = "/current-user";
 
     return fetch(url, {
         method: 'POST',
@@ -344,11 +344,10 @@ if (!fakeUploadPostInput && commentsBlock) {
      * @param condition {string}
      * @returns {any}
      */
-    function fetchComments(condition = "oldest") {
+    function fetchComments() {
         const url = "/comment/fetch";
         const data = {
             post_id: commentFormButton.getAttribute("data-post-id"),
-            condition: condition
         };
 
         return fetch(url, {
@@ -369,11 +368,12 @@ if (!fakeUploadPostInput && commentsBlock) {
             })
     }
 
-    async function displayComments(condition = "oldest") {
-        const data = await fetchComments(condition);
+    const comments = await fetchComments();
 
-        if (data) {
-            for (const datum of data) {
+    async function displayComments(comments) {
+
+        if (comments) {
+            for (const comment of comments) {
 
                 // All the necessary HTML Elements for the comment
                 let commentBlock = document.createElement('div'),
@@ -418,16 +418,16 @@ if (!fakeUploadPostInput && commentsBlock) {
                 commentDislikesBlock.classList.add("comment-dislikes-block");
 
                 // Filling the elements with their respective contents and append them to their respective parents
-                commentContext.innerHTML += datum.content;
-                userUsername.innerText += datum.author.username;
+                commentContext.innerHTML += comment.content;
+                userUsername.innerText += comment.author.username;
                 commentMenuIcon.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1em\" height=\"1em\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M7 12a2 2 0 1 1-4 0a2 2 0 0 1 4 0m7 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0m7 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0\"/></svg>";
-                profileImage.setAttribute("src", `../images/${datum.author.gender.toLowerCase()}_icon.jpg`);
+                profileImage.setAttribute("src", `../images/${comment.author.gender.toLowerCase()}_icon.jpg`);
                 profileImage.setAttribute("alt", "profile-image");
-                commentDate.innerHTML = reduceDateFormat(dayjs(datum.createdAt.date).fromNow());
+                commentDate.innerHTML = reduceDateFormat(dayjs(comment.createdAt.date).fromNow());
                 commentLike.innerHTML = "Like";
                 commentDislike.innerHTML = "Dislike";
 
-                for (const reaction of datum.reactions) {
+                for (const reaction of comment.reactions) {
                     if (reaction.type === "like")
                         likesNumber++;
                     else dislikesNumber++;
@@ -459,15 +459,15 @@ if (!fakeUploadPostInput && commentsBlock) {
                 });
 
                 commentDate.addEventListener("mouseover", function () {
-                    this.innerHTML = dayjs(datum.createdAt.date).format('dddd, MMMM D, YYYY');
+                    this.innerHTML = dayjs(comment.createdAt.date).format('dddd, MMMM D, YYYY');
                 });
 
                 commentDate.addEventListener("mouseleave", function () {
-                    this.innerHTML = reduceDateFormat(dayjs(datum.createdAt.date).fromNow());
+                    this.innerHTML = reduceDateFormat(dayjs(comment.createdAt.date).fromNow());
                 });
 
                 commentDislike.addEventListener("click", async function () {
-                    if (await reactToComment(datum.id, "dislike")) {
+                    if (await reactToComment(comment.id, "dislike")) {
                         if (getComputedStyle(commentLike).color === 'rgb(35, 182, 217)') {
                             likesNumber--;
                             dislikesNumber++;
@@ -487,7 +487,7 @@ if (!fakeUploadPostInput && commentsBlock) {
                 });
 
                 commentLike.addEventListener("click", async function () {
-                    if (await reactToComment(datum.id)) {
+                    if (await reactToComment(comment.id)) {
                         if (getComputedStyle(commentDislike).color === 'rgb(255, 0, 0)') {
                             dislikesNumber--;
                             likesNumber++;
@@ -518,27 +518,27 @@ if (!fakeUploadPostInput && commentsBlock) {
 
                     switch (i) {
                         case 0:
-                            if (datum.author.username === currentUser.username)
+                            if (comment.author.username === currentUser.username)
                                 commentMenuAction.style.display = "none";
                             commentMenuAction.innerHTML = "Hide Comment";
                             break;
                         case 1:
-                            if (datum.author.username === currentUser.username)
+                            if (comment.author.username === currentUser.username)
                                 commentMenuAction.style.display = "none";
-                            commentMenuAction.innerHTML = `Block ${datum.author.username.split(" ")[0]}`;
+                            commentMenuAction.innerHTML = `Block ${comment.author.username.split(" ")[0]}`;
                             break;
                         case 2:
-                            if (datum.author.username === currentUser.username)
+                            if (comment.author.username === currentUser.username)
                                 commentMenuAction.style.display = "none";
                             commentMenuAction.innerHTML = `Report Comment`;
                             break;
                         case 3:
-                            if (datum.author.username !== currentUser.username)
+                            if (comment.author.username !== currentUser.username)
                                 commentMenuAction.style.display = "none";
                             commentMenuAction.innerHTML = "Edit Comment";
                             break;
                         case 4:
-                            if (datum.author.username !== currentUser.username && !currentUser.roles.includes("ROLE_ADMIN"))
+                            if (comment.author.username !== currentUser.username && !currentUser.roles.includes("ROLE_ADMIN"))
                                 commentMenuAction.style.display = "none";
                             commentMenuAction.innerHTML = "Delete Comment";
                             break;
@@ -560,7 +560,7 @@ if (!fakeUploadPostInput && commentsBlock) {
     checkCommentFormContent();
 
     // Initial display of Comments
-    displayComments();
+    displayComments(comments);
 
     function deleteAllComments() {
         const commentBlocks = document.querySelectorAll('.comment');
@@ -572,18 +572,49 @@ if (!fakeUploadPostInput && commentsBlock) {
         }
     }
 
+    // Comments Filters
     newestCommentsFilter.addEventListener('click', function () {
         deleteAllComments();
-        displayComments("newest");
+
+        if (comments) {
+            comments.sort((a, b) => new Date(a.createdAt.date) - new Date(b.createdAt.date));
+            comments.reverse();
+        }
+
+        displayComments(comments);
     });
 
     oldestCommentsFilter.addEventListener("click", function () {
         deleteAllComments();
-        displayComments("oldest");
+
+        if (comments)
+            comments.sort((a, b) => new Date(a.createdAt.date) - new Date(b.createdAt.date));
+
+        displayComments(comments);
+    })
+
+    moreReactionsFilter.addEventListener("click", function () {
+        deleteAllComments();
+
+        if (comments) {
+            comments.sort((a, b) => a.reactions.length - b.reactions.length);
+            comments.reverse();
+        }
+
+        displayComments(comments);
+    })
+
+    lessReactionsFilter.addEventListener("click", function () {
+        deleteAllComments();
+
+        if (comments)
+            comments.sort((a, b) => a.reactions.length - b.reactions.length);
+
+        displayComments(comments);
     })
 
     function reactToComment(id, reaction = "like") {
-        const url = window.location.protocol + "//" + window.location.host + "/comment/"+ id + "/react",
+        const url = `/comment/${id}/react`,
             data = {
                 reaction: reaction
             };

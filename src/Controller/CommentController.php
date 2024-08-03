@@ -56,18 +56,18 @@ class CommentController extends AbstractController
     {
         $jsonData = $request->getContent();
         $data = json_decode($jsonData, true);
-        $condition = $data['condition'];
 
         $post = $this->entityManager->getRepository(Post::class)->find($data['post_id']);
+        $comments = $this->entityManager->getRepository(Comment::class)->findBy(['post' => $post]);
 
-        $comments = match ($condition) {
+        /* $comments = match ($condition) {
             "newest" => $this->entityManager->getRepository(Comment::class)
                 ->findBy(
                     ['post' => $post],
                     ['createdAt' => 'DESC']
                 ),
             default => $this->entityManager->getRepository(Comment::class)->findBy(['post' => $post]),
-        };
+        }; */
 
         return new JsonResponse($comments);
     }
